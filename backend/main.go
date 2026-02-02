@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"github.com/google/uuid"
 )
 
 type CreateRequestInput struct {
@@ -47,7 +48,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 		out := CreateRequestOutput{
-			RequestID: "R-1",
+			RequestID: uuid.NewString(),
 			Title:     in.Title,
 		}
 		if err := json.NewEncoder(w).Encode(out); err != nil {

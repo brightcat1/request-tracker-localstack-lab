@@ -1,9 +1,0 @@
-# env files
-.env
-.env.*
-
-# go build artifacts
-/bin/
-*.exe
-*.out
-*.test

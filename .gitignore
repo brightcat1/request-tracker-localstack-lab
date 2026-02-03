@@ -1,0 +1,26 @@
+# env files
+.env
+.env.*
+
+# go build artifacts
+/bin/
+*.exe
+*.out
+*.test
+
+# --- OpenTofu / Terraform ---
+**/.terraform/
+**/.tofu/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc

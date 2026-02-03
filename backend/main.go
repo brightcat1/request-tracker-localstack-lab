@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 type CreateRequestInput struct {
@@ -43,6 +44,9 @@ func newDynamoClient(ctx context.Context) (*dynamodb.Client, error) {
 }
 
 func main() {
+	if os.Getenv("APP_ENV") != "production" {
+		_ = godotenv.Load(".env")
+	}
 	ctx := context.Background()
 	ddb, err := newDynamoClient(ctx)
 	if err != nil {

@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -23,6 +25,8 @@ type CreateRequestInput struct {
 type CreateRequestOutput struct {
 	RequestID string `json:"requestId"`
 	Title     string `json:"title"`
+	CreatedAt  string `json:"createdAt"`
+	TrackingURL string `json:"trackingUrl"`
 }
 
 func newDynamoClient(ctx context.Context) (*dynamodb.Client, error) {
@@ -81,10 +85,22 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
+		createdAt := time.Now().UTC().Format(time.RFC3339)
 		out := CreateRequestOutput{
 			RequestID: uuid.NewString(),
 			Title:     in.Title,
+			CreatedAt: createdAt,
 		}
+
+		requesterToken := uuid.NewString()
+
+		base := os.Getenv("APP_PUBLIC_BASE_URL")
+		if base == "" {
+		base = "http://localhost:8080"
+		}
+		base = strings.TrimRight(base, "/")
+		out.TrackingURL = fmt.Sprintf("%s/requests/%s?t=%s", base, out.RequestID, requesterToken)
+		
 		pk := "REQ#" + out.RequestID
 		reqCtx := r.Context()
 		_, err = ddb.PutItem(reqCtx, &dynamodb.PutItemInput{
@@ -93,6 +109,8 @@ func main() {
 				"PK":     &types.AttributeValueMemberS{Value: pk},
 				"title":  &types.AttributeValueMemberS{Value: out.Title},
 				"status": &types.AttributeValueMemberS{Value: "PENDING"},
+				"createdAt": &types.AttributeValueMemberS{Value: createdAt},
+				"requesterToken": &types.AttributeValueMemberS{Value: requesterToken},
 			},
 		})
 		if err != nil {

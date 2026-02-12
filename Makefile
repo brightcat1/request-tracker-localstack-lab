@@ -1,10 +1,21 @@
-.PHONY: infra-apply infra-destroy run-backend
+.PHONY: infra-init infra-apply infra-destroy run-backend run-worker
 
-infra-apply:
-	cd infra/envs/local && tofu init && tofu apply -auto-approve
+TFDIR := infra/envs/local
+APP_ENV := local
 
-infra-destroy:
-	cd infra/envs/local && tofu destroy -auto-approve
+infra-init:
+	tofu -chdir=$(TFDIR) init
+
+infra-apply: infra-init
+	tofu -chdir=$(TFDIR) fmt -recursive
+	tofu -chdir=$(TFDIR) validate
+	tofu -chdir=$(TFDIR) apply -auto-approve
+
+infra-destroy: infra-init
+	tofu -chdir=$(TFDIR) destroy -auto-approve
 
 run-backend:
-	cd backend && APP_ENV=local go run .
+	cd backend && APP_ENV=$(APP_ENV) go run .
+
+run-worker:
+	cd backend && APP_ENV=$(APP_ENV) go run ./cmd/worker

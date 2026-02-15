@@ -9,6 +9,7 @@ provider "aws" {
   endpoints {
     dynamodb = var.localstack_endpoint
     sts      = var.localstack_endpoint
+    sqs      = var.localstack_endpoint
   }
 }
 

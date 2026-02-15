@@ -93,14 +93,17 @@ func newSQSClient(ctx context.Context) (*sqs.Client, error) {
 	}), nil
 }
 
-func ensureQueue(ctx context.Context, c *sqs.Client, name string) (string, error) {
-	out, err := c.CreateQueue(ctx, &sqs.CreateQueueInput{
-		QueueName: aws.String(name),
-	})
-	if err != nil {
-		return "", err
-	}
-	return aws.ToString(out.QueueUrl), nil
+func resolveQueueURL(ctx context.Context, c *sqs.Client) (string, error) {
+    if v := os.Getenv("SQS_QUEUE_URL"); v != "" {
+        return v, nil
+    }
+    out, err := c.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
+        QueueName: aws.String(queueName),
+    })
+    if err != nil {
+        return "", err
+    }
+    return aws.ToString(out.QueueUrl), nil
 }
 
 func getStringAttr(item map[string]types.AttributeValue, key string) (string, bool) {
@@ -127,7 +130,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	queueURL, err := ensureQueue(ctx, sqsClient, "request-events")
+	queueURL, err := resolveQueueURL(ctx, sqsClient)
 	if err != nil {
 		log.Fatal(err)
 	}
